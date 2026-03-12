@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 0 24px 64px; }
+
+    /* Header */
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid #21262d;
+      margin-bottom: 24px;
+    }
+    header h1 { font-size: 22px; color: #e6edf3; font-weight: 600; }
+    header .subtitle { font-size: 13px; color: #8b949e; margin-top: 4px; }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .nav a {
+      padding: 4px 10px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #8b949e;
+    }
+    .nav a:hover { border-color: #58a6ff; color: #58a6ff; text-decoration: none; }
+
+    /* Source status bar */
+    .source-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+    .source-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #8b949e;
+    }
+    .source-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .source-pill.ok .dot { background: #3fb950; }
+    .source-pill.fail .dot { background: #f85149; }
+    .source-pill.ok { color: #3fb950; }
+    .source-pill.fail { color: #f85149; }
+
+    /* Uncurated banner */
+    .banner-uncurated {
+      background: #1c1c14;
+      border: 1px solid #9e6a03;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      color: #d29922;
+      font-size: 13px;
+    }
+    .banner-uncurated strong { color: #e3b341; }
+
+    /* Category filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      color: #8b949e;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: capitalize;
+    }
+    .filter-pill:hover { border-color: #58a6ff; color: #c9d1d9; }
+    .filter-pill.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+    .filter-pill .count {
+      background: rgba(255,255,255,0.1);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .filter-pill.active .count { background: rgba(255,255,255,0.2); }
+
+    /* Item card */
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: #30363d; }
+    .card.hidden { display: none; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .rank-badge {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      margin-top: 2px;
+    }
+
+    .card-title-row { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e6edf3;
+      line-height: 1.4;
+    }
+    .card-title a { color: inherit; }
+    .card-title a:hover { color: #58a6ff; text-decoration: none; }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-source-hn    { background: #1a1000; color: #ff6600; border: 1px solid #ff6600; }
+    .badge-source-reddit { background: #1a0a00; color: #ff4500; border: 1px solid #ff4500; }
+    .badge-source-rss   { background: #001a0a; color: #3fb950; border: 1px solid #3fb950; }
+    .badge-source-other { background: #0d1117; color: #8b949e; border: 1px solid #30363d; }
+
+    .badge-cat {
+      background: #13213a;
+      color: #58a6ff;
+      border: 1px solid #1f6feb;
+    }
+
+    .also-on {
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    .card-summary {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #c9d1d9;
+      line-height: 1.6;
+    }
+
+    .card-hook {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #0d1117;
+      border-left: 3px solid #30363d;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #8b949e;
+      font-style: italic;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scores {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #8b949e;
+    }
+    .scores span { white-space: nowrap; }
+    .scores .val { color: #c9d1d9; font-weight: 600; }
+
+    .share-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Copy button */
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { background: #30363d; border-color: #58a6ff; }
+    .copy-btn.copied { color: #3fb950; border-color: #3fb950; }
+
+    /* Hidden copy textarea */
+    .copy-text { position: absolute; left: -9999px; }
+
+    /* Footer */
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #21262d;
+      font-size: 12px;
+      color: #8b949e;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>{{ title }}</h1>
+    <div class="subtitle">Generated {{ run_time.strftime('%Y-%m-%d %H:%M UTC') }}</div>
+    <nav class="nav">
+      {% if prev_file %}<a href="{{ prev_file }}">&#8592; Previous</a>{% endif %}
+      <a href="index.html">Archive</a>
+      {% if next_file %}<a href="{{ next_file }}">Next &#8594;</a>{% endif %}
+    </nav>
+  </header>
+
+  <div class="source-bar">
+    {% for name, ok in source_status.items() %}
+    <span class="source-pill {{ 'ok' if ok else 'fail' }}">
+      <span class="dot"></span>{{ name }}
+    </span>
+    {% endfor %}
+  </div>
+
+  {% if uncurated %}
+  <div class="banner-uncurated">
+    <strong>Uncurated digest</strong> — Claude was unavailable. Items are sorted by engagement score only.
+  </div>
+  {% endif %}
+
+  {% if not uncurated %}
+  <div class="filter-bar">
+    <span class="filter-pill active" data-cat="all" onclick="filterCat(this)">
+      All <span class="count">{{ all_items | length }}</span>
+    </span>
+    {% for category, items in grouped_items.items() %}
+    <span class="filter-pill" data-cat="{{ category }}" onclick="filterCat(this)">
+      {{ category }} <span class="count">{{ items | length }}</span>
+    </span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% set ns = namespace(rank=0) %}
+  {% for category, items in grouped_items.items() %}
+  {% for item in items %}
+  {% set ns.rank = ns.rank + 1 %}
+  <div class="card" data-category="{{ item.category }}">
+    <div class="card-header">
+      <div class="rank-badge">{{ ns.rank }}</div>
+      <div class="card-title-row">
+        <div class="card-title">
+          <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+        </div>
+        <div class="card-meta">
+          <span class="badge badge-source-{{ item.source }}">{{ item.source }}</span>
+          {% if item.category != 'uncurated' %}
+          <span class="badge badge-cat">{{ item.category }}</span>
+          {% endif %}
+          {% if item.also_on %}
+          <span class="also-on">also on {{ item.also_on | join(', ') }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if item.summary %}
+    <div class="card-summary">{{ item.summary }}</div>
+    {% endif %}
+
+    {% if item.share_hook %}
+    <div class="card-hook">{{ item.share_hook }}</div>
+    {% endif %}
+
+    <div class="card-footer">
+      <div class="scores">
+        {% if item.usefulness is not none %}
+        <span>useful <span class="val">{{ item.usefulness }}</span></span>
+        <span>wow <span class="val">{{ item.wow_factor }}</span></span>
+        <span>share <span class="val">{{ item.shareability }}</span></span>
+        {% endif %}
+        <span>score <span class="val">{{ "%.1f"|format(item.combined_score) }}</span></span>
+      </div>
+      {% if item.share_hook %}
+      <div class="share-btns">
+        <button class="copy-btn" onclick="copyShare(this)">
+          Copy for Slack
+          <textarea class="copy-text">{{ item.share_hook }} {{ item.url }}</textarea>
+        </button>
+        <button class="copy-btn" onclick="copyShare(this)">
+          Copy for WhatsApp
+          <textarea class="copy-text">{{ item.title }}
+{{ item.share_hook }}
+{{ item.url }}</textarea>
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endfor %}
+
+  <footer>
+    <span>
+      {{ stats.items_scanned }} items scanned &middot;
+      {{ stats.duplicates_removed }} duplicates removed &middot;
+      {{ stats.sources }} sources &middot;
+      {{ "%.1f"|format(stats.duration_s) }}s
+    </span>
+    <span>AI Digest</span>
+  </footer>
+
+</div>
+
+<script>
+function filterCat(pill) {
+  document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active'); });
+  pill.classList.add('active');
+  var cat = pill.getAttribute('data-cat');
+  var rank = 0;
+  document.querySelectorAll('.card').forEach(function(card) {
+    var show = cat === 'all' || card.getAttribute('data-category') === cat;
+    card.classList.toggle('hidden', !show);
+    if (show) {
+      rank++;
+      card.querySelector('.rank-badge').textContent = rank;
+    }
+  });
+}
+
+function copyShare(btn) {
+  var textarea = btn.querySelector('.copy-text');
+  var label = btn.getAttribute('data-label') || btn.childNodes[0].textContent.trim();
+  btn.setAttribute('data-label', label);
+  textarea.style.position = 'fixed';
+  textarea.style.left = '0';
+  textarea.style.top = '0';
+  textarea.select();
+  document.execCommand('copy');
+  textarea.style.position = 'absolute';
+  textarea.style.left = '-9999px';
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(function() {
+    btn.textContent = label;
+    btn.classList.remove('copied');
+    btn.appendChild(textarea);
+  }, 2000);
+}
+</script>
+</body>
+</html>
