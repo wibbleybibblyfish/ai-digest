@@ -27,6 +27,27 @@ DEFAULT_CONFIG: dict = {
             {"url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "name": "The Verge"},
         ],
     },
+    "arxiv": {
+        "enabled": True,
+        "categories": ["cs.AI", "cs.CL", "cs.LG"],
+        "max_items_per_run": 10,
+    },
+    "github": {
+        "enabled": False,
+        "keywords": ["AI", "LLM", "GPT", "machine-learning", "langchain", "generative-ai"],
+        "min_stars": 20,
+    },
+    "youtube": {
+        "enabled": True,
+        "max_items_per_run": 8,
+        "channels": [
+            {"name": "Fireship", "id": "UCsBjURrPoezykLs9EqgamOA"},
+            {"name": "Two Minute Papers", "id": "UCbfYPyITQ-7l4upoX8nvctg"},
+            {"name": "Yannic Kilcher", "id": "UCZHmQk67mSJgfCCTn7xBfew"},
+            {"name": "Matt Wolfe", "id": "UCJKBx3Ey4aEndBMGhi8U0Aw"},
+            {"name": "TheAIGRID", "id": "UCmTbMToVRpqPbkEOSiRm0sg"},
+        ],
+    },
     "claude": {
         "model": "sonnet",
         "max_candidates": 50,

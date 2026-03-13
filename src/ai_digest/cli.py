@@ -9,9 +9,12 @@ from pathlib import Path
 
 import click
 
+from ai_digest.collectors.arxiv import ArxivCollector
+from ai_digest.collectors.github import GitHubTrendingCollector
 from ai_digest.collectors.hackernews import HackerNewsCollector
 from ai_digest.collectors.reddit import RedditCollector
 from ai_digest.collectors.rss import RSSCollector
+from ai_digest.collectors.youtube import YouTubeCollector
 from ai_digest.config import DEFAULT_CONFIG_DIR, load_config, validate_env
 from ai_digest.curator import Curator
 from ai_digest.dedup import deduplicate
@@ -103,6 +106,12 @@ async def _run_pipeline(
         collectors.append(("reddit", RedditCollector(config["reddit"])))
     if config.get("rss", {}).get("enabled"):
         collectors.append(("rss", RSSCollector(config["rss"])))
+    if config.get("arxiv", {}).get("enabled"):
+        collectors.append(("arxiv", ArxivCollector(config["arxiv"])))
+    if config.get("github", {}).get("enabled"):
+        collectors.append(("github", GitHubTrendingCollector(config["github"])))
+    if config.get("youtube", {}).get("enabled"):
+        collectors.append(("youtube", YouTubeCollector(config["youtube"])))
 
     all_items: list[RawItem] = []
     source_status: dict[str, bool] = {}
@@ -194,3 +203,37 @@ def _show_sources(config: dict) -> None:
         for feed in feeds:
             click.echo(f"    - {feed.get('name', 'unnamed')}: {feed.get('url', '')}")
         click.echo(f"    max_items_per_run: {rss_cfg.get('max_items_per_run', 8)}")
+
+    click.echo("")
+
+    arxiv_cfg = config.get("arxiv", {})
+    enabled = arxiv_cfg.get("enabled", False)
+    status = "enabled" if enabled else "disabled"
+    click.echo(f"  arXiv ({status})")
+    if enabled:
+        categories = arxiv_cfg.get("categories", [])
+        click.echo(f"    categories: {', '.join(categories)}")
+        click.echo(f"    max_items_per_run: {arxiv_cfg.get('max_items_per_run', 10)}")
+
+    click.echo("")
+
+    github_cfg = config.get("github", {})
+    enabled = github_cfg.get("enabled", False)
+    status = "enabled" if enabled else "disabled"
+    click.echo(f"  GitHub Trending ({status})")
+    if enabled:
+        topics = github_cfg.get("topics", [])
+        click.echo(f"    topics: {', '.join(topics)}")
+        click.echo(f"    min_stars: {github_cfg.get('min_stars', 20)}")
+
+    click.echo("")
+
+    youtube_cfg = config.get("youtube", {})
+    enabled = youtube_cfg.get("enabled", False)
+    status = "enabled" if enabled else "disabled"
+    click.echo(f"  YouTube ({status})")
+    if enabled:
+        channels = youtube_cfg.get("channels", [])
+        for ch in channels:
+            click.echo(f"    - {ch.get('name', 'unnamed')}")
+        click.echo(f"    max_items_per_run: {youtube_cfg.get('max_items_per_run', 8)}")

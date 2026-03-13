@@ -10,12 +10,25 @@ from ai_digest.collectors.base import BaseCollector
 from ai_digest.models import RawItem
 
 ALGOLIA_URL = "https://hn.algolia.com/api/v1/search_by_date"
+_HN_META_URLS = {"newsguidelines", "newsfaq", "newswelcome", "showhn", "launches"}
+_HN_META_TITLES = re.compile(
+    r'\b(HN is for|Hacker News guidelines|Show HN rules|Ask HN rules)\b',
+    re.IGNORECASE,
+)
 
 
 class HackerNewsCollector(BaseCollector):
     def __init__(self, config: dict):
         self.keywords = config.get("keywords", ["AI", "LLM"])
         self.min_points = config.get("min_points", 20)
+
+    def _is_hn_meta(self, hit: dict) -> bool:
+        url = hit.get("url", "")
+        if any(slug in url for slug in _HN_META_URLS):
+            return True
+        if _HN_META_TITLES.search(hit.get("title", "")):
+            return True
+        return False
 
     def _title_matches(self, title: str) -> bool:
         title_lower = title.lower()
@@ -38,7 +51,7 @@ class HackerNewsCollector(BaseCollector):
                 resp.raise_for_status()
                 for h in resp.json().get("hits", []):
                     oid = h.get("objectID")
-                    if oid and oid not in seen and self._title_matches(h.get("title", "")):
+                    if oid and oid not in seen and self._title_matches(h.get("title", "")) and not self._is_hn_meta(h):
                         seen[oid] = h
         hits = [h for h in seen.values() if h.get("points", 0) > self.min_points]
         if not hits:

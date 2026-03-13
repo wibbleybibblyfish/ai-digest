@@ -85,7 +85,7 @@ class Curator:
                 ],
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=300,
             )
             if result.returncode != 0:
                 logger.error("Claude CLI failed (exit %d): %s", result.returncode, result.stderr[:500])
